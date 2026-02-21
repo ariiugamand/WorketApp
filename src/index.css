@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Corporate CRM Design System */
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Deep navy blue as primary */
+    --primary: 221 83% 28%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 221 83% 38%;
+    --primary-muted: 221 50% 92%;
+
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 15% 46%;
+
+    --accent: 215 90% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 221 83% 28%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 220 20% 85%;
+    --sidebar-primary: 221 83% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 40% 18%;
+    --sidebar-accent-foreground: 220 20% 90%;
+    --sidebar-border: 222 40% 18%;
+    --sidebar-ring: 221 83% 55%;
+    --sidebar-muted: 220 20% 65%;
+
+    /* Status badge colors */
+    --status-new: 199 89% 48%;
+    --status-approved: 142 71% 45%;
+    --status-rejected: 0 72% 51%;
+    --status-in-progress: 38 92% 50%;
+    --status-completed: 142 71% 45%;
+    --status-overdue: 0 72% 51%;
+    --status-scheduled: 221 83% 55%;
+    --status-cancelled: 0 72% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .badge-new { @apply bg-[hsl(var(--status-new))] text-white; }
+  .badge-approved { @apply bg-[hsl(var(--status-approved))] text-white; }
+  .badge-rejected { @apply bg-[hsl(var(--status-rejected))] text-white; }
+  .badge-in-progress { @apply bg-[hsl(var(--status-in-progress))] text-white; }
+  .badge-completed { @apply bg-[hsl(var(--status-completed))] text-white; }
+  .badge-overdue { @apply bg-[hsl(var(--status-overdue))] text-white; }
+  .badge-scheduled { @apply bg-[hsl(var(--status-scheduled))] text-white; }
+  .badge-cancelled { @apply bg-[hsl(var(--status-cancelled))] text-white; }
+  .badge-day-off { @apply bg-muted text-muted-foreground; }
+  .badge-transferred { @apply bg-[hsl(var(--warning))] text-white; }
+  .badge-reduced { @apply bg-[hsl(var(--info))] text-white; }
+
+  /* Preference cell (shown in red in schedule) */
+  .has-preference { @apply bg-red-50 border border-red-200; }
+  .preference-dot { @apply inline-block w-2 h-2 rounded-full bg-red-500 mr-1; }
+}
