@@ -4,29 +4,29 @@
 
 @layer base {
   :root {
-    /* Corporate CRM Design System */
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    /* Corporate CRM Design System — Green Theme */
+    --background: 0 0% 98%;
+    --foreground: 145 20% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 145 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 145 20% 12%;
 
-    /* Deep navy blue as primary */
-    --primary: 221 83% 28%;
+    /* Deep green as primary */
+    --primary: 145 65% 29%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 221 83% 38%;
-    --primary-muted: 221 50% 92%;
+    --primary-light: 145 65% 38%;
+    --primary-muted: 145 40% 94%;
 
-    --secondary: 215 25% 27%;
+    --secondary: 145 20% 27%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 15% 46%;
+    --muted: 145 10% 94%;
+    --muted-foreground: 145 10% 46%;
 
-    --accent: 215 90% 52%;
+    --accent: 145 60% 42%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
@@ -41,22 +41,22 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 221 83% 28%;
+    --border: 145 15% 88%;
+    --input: 145 15% 88%;
+    --ring: 145 65% 29%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Sidebar */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 220 20% 85%;
-    --sidebar-primary: 221 83% 55%;
+    /* Sidebar — dark green */
+    --sidebar-background: 145 35% 15%;
+    --sidebar-foreground: 145 20% 85%;
+    --sidebar-primary: 145 55% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 40% 18%;
-    --sidebar-accent-foreground: 220 20% 90%;
-    --sidebar-border: 222 40% 18%;
-    --sidebar-ring: 221 83% 55%;
-    --sidebar-muted: 220 20% 65%;
+    --sidebar-accent: 145 25% 22%;
+    --sidebar-accent-foreground: 145 20% 90%;
+    --sidebar-border: 145 25% 22%;
+    --sidebar-ring: 145 55% 45%;
+    --sidebar-muted: 145 20% 65%;
 
     /* Status badge colors */
     --status-new: 199 89% 48%;
@@ -65,7 +65,7 @@
     --status-in-progress: 38 92% 50%;
     --status-completed: 142 71% 45%;
     --status-overdue: 0 72% 51%;
-    --status-scheduled: 221 83% 55%;
+    --status-scheduled: 145 55% 45%;
     --status-cancelled: 0 72% 51%;
   }
 }
@@ -96,7 +96,12 @@
   .badge-transferred { @apply bg-[hsl(var(--warning))] text-white; }
   .badge-reduced { @apply bg-[hsl(var(--info))] text-white; }
 
-  /* Preference cell (shown in red in schedule) */
-  .has-preference { @apply bg-red-50 border border-red-200; }
-  .preference-dot { @apply inline-block w-2 h-2 rounded-full bg-red-500 mr-1; }
+  /* Preference cell (shown in yellow in schedule) */
+  .has-preference { @apply bg-yellow-50 border border-yellow-200; }
+  .preference-dot { @apply inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1; }
+
+  /* Page gradient background */
+  .page-gradient {
+    @apply bg-gradient-to-br from-white via-green-50 to-emerald-100;
+  }
 }

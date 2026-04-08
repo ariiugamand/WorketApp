@@ -81,7 +81,7 @@ export default function Login() {
               <div className="flex items-center justify-between mb-1">
                 <Label htmlFor="password">Пароль</Label>
                 <Link to="/reset-password" className="text-xs text-primary hover:underline">
-                  {/*Забыли пароль?*/}
+                  Забыли пароль?
                 </Link>
               </div>
               <div className="relative">

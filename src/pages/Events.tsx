@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { StatusBadge } from "@/components/StatusBadge";
-import { IMPORTANCE_COLORS, EVENT_TYPES, formatDate, getCurrentMonthStr } from "@/lib/utils-crm";
-import { Plus, Edit2, Trash2, Send, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { EVENT_TYPES, formatDate, getCurrentMonthStr } from "@/lib/utils-crm";
+import { Plus, Edit2, Send, Users, CalendarDays } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -30,12 +28,24 @@ interface Employee { id: string; full_name: string; }
 
 const emptyForm = { title: "", event_type: EVENT_TYPES[0], date: "", time: "", importance: "medium", description: "" };
 
+const importanceBadge: Record<string, string> = {
+  low: "bg-gray-100 text-gray-600",
+  medium: "bg-yellow-100 text-yellow-700",
+  high: "bg-red-100 text-red-700",
+  critical: "bg-red-600 text-white",
+};
+const importanceLabel: Record<string, string> = {
+  low: "Низкая", medium: "Средняя", high: "Высокая", critical: "Критическая",
+};
+const importanceDot: Record<string, string> = {
+  low: "bg-gray-400", medium: "bg-yellow-500", high: "bg-red-500", critical: "bg-red-600",
+};
+
 export default function Events() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [monthStr, setMonthStr] = useState(getCurrentMonthStr());
+  const [monthStr] = useState(getCurrentMonthStr());
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editEvent, setEditEvent] = useState<Event | null>(null);
@@ -66,7 +76,12 @@ export default function Events() {
     setLoading(false);
   };
 
-  const openCreate = () => { setEditEvent(null); setForm({ ...emptyForm, date: new Date().toISOString().split("T")[0] }); setFormOpen(true); };
+  const openCreate = () => {
+    setEditEvent(null);
+    setForm({ ...emptyForm, date: new Date().toISOString().split("T")[0] });
+    setFormOpen(true);
+  };
+
   const openEdit = (ev: Event) => {
     setEditEvent(ev);
     setForm({ title: ev.title, event_type: ev.event_type, date: ev.date, time: ev.time || "", importance: ev.importance, description: ev.description || "" });
@@ -89,9 +104,9 @@ export default function Events() {
   };
 
   const deleteEvent = async (id: string) => {
-    if (!confirm("Удалить событие?")) return;
+    if (!confirm("Отменить событие?")) return;
     await supabase.from("events").delete().eq("id", id);
-    toast({ title: "Событие удалено" });
+    toast({ title: "Событие отменено" });
     loadEvents();
   };
 
@@ -100,100 +115,148 @@ export default function Events() {
     if (!eventId) return;
     const ev = events.find(e => e.id === eventId);
     if (!ev) return;
-    const text = `📅 Событие: ${ev.title} — ${formatDate(ev.date)}${ev.time ? ` в ${ev.time.slice(0,5)}` : ""}`;
+    const text = `📅 Событие: ${ev.title} — ${formatDate(ev.date)}${ev.time ? ` в ${ev.time.slice(0, 5)}` : ""}`;
     const targets = mode === "all" ? employees : employees.filter(e => selectedEmployees.includes(e.id));
     const inserts = targets.map(emp => ({ event_id: eventId, employee_id: emp.id, text }));
     const { error } = await supabase.from("notifications").insert(inserts);
     if (error) toast({ title: "Ошибка", description: error.message, variant: "destructive" });
-    else { toast({ title: `Уведомления отправлены ${targets.length} сотрудникам` }); setNotifyDialog({ open: false, mode: "all" }); setSelectedEmployees([]); }
+    else {
+      toast({ title: `Уведомления отправлены ${targets.length} сотрудникам` });
+      setNotifyDialog({ open: false, mode: "all" });
+      setSelectedEmployees([]);
+    }
   };
-
-  const changeMonth = (dir: number) => {
-    const [y, m] = monthStr.split("-").map(Number);
-    const nd = new Date(y, m - 1 + dir, 1);
-    setMonthStr(`${nd.getFullYear()}-${String(nd.getMonth() + 1).padStart(2, "0")}`);
-  };
-
-  const importanceBadge: Record<string, string> = { low: "bg-muted text-muted-foreground", medium: "bg-warning/20 text-warning", high: "bg-destructive/20 text-destructive", critical: "bg-destructive text-destructive-foreground" };
-  const importanceLabel: Record<string, string> = { low: "Низкая", medium: "Средняя", high: "Высокая", critical: "Критическая" };
 
   return (
-    <AppLayout title="Календарь событий">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}><ChevronLeft className="w-4 h-4" /></Button>
-            <span className="font-semibold text-sm min-w-32 text-center">
-              {new Date(monthStr + "-01").toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}
-            </span>
-            <Button variant="outline" size="icon" onClick={() => changeMonth(1)}><ChevronRight className="w-4 h-4" /></Button>
-          </div>
-          <Button className="ml-auto gap-2" onClick={openCreate}><Plus className="w-4 h-4" />Создать событие</Button>
-        </div>
+    <AppLayout title="Мероприятия">
+      <div className="space-y-5">
+        <h1 className="text-2xl font-bold text-center">Мероприятия</h1>
 
         {loading ? (
-          <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-20">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground bg-card border rounded-xl">
-            <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>Нет событий в этом месяце</p>
+          <div className="text-center py-16 text-muted-foreground bg-white/80 border rounded-xl">
+            <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>Нет мероприятий в этом месяце</p>
           </div>
         ) : (
           <div className="space-y-3">
             {events.map(ev => (
-              <div key={ev.id} className="bg-card border rounded-xl p-4 hover:shadow-sm transition-shadow">
-                <div className="flex items-start gap-3">
+              <div key={ev.id} className="bg-white/90 border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                    <CalendarDays className="w-5 h-5 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="font-semibold truncate">{ev.title}</h3>
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", importanceBadge[ev.importance])}>
-                        {importanceLabel[ev.importance]}
-                      </span>
-                      <span className="text-xs bg-primary-muted text-primary px-2 py-0.5 rounded-full">{ev.event_type}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(ev.date)}{ev.time ? ` в ${ev.time.slice(0, 5)}` : ""}
+                    <h3 className="font-semibold text-foreground">{ev.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {formatDate(ev.date)}{ev.time ? `, ${ev.time.slice(0, 5)}` : ""}
                     </p>
-                    {ev.description && <p className="text-sm text-foreground mt-2">{ev.description}</p>}
+                    {ev.description && (
+                      <p className="text-sm text-foreground/80 mt-1">{ev.description}</p>
+                    )}
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className={cn("w-2 h-2 rounded-full flex-shrink-0", importanceDot[ev.importance])} />
+                      <span className="text-xs text-muted-foreground">
+                        Важность: <strong>{importanceLabel[ev.importance]}</strong>
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button variant="outline" size="sm" className="gap-1" onClick={() => setNotifyDialog({ open: true, eventId: ev.id, mode: "all" })}>
-                      <Send className="w-3 h-3" /> Всем
+                  <div className="flex flex-col gap-1.5 flex-shrink-0">
+                    <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => deleteEvent(ev.id)}>
+                      Отменить
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-1" onClick={() => { setSelectedEmployees([]); setNotifyDialog({ open: true, eventId: ev.id, mode: "selected" }); }}>
-                      <Users className="w-3 h-3" /> Выбрать
+                    <Button size="sm" className="text-xs h-7 gap-1" onClick={() => openEdit(ev)}>
+                      <Edit2 className="w-3 h-3" />
+                      Редактировать
                     </Button>
-                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(ev)}><Edit2 className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 text-destructive hover:text-destructive" onClick={() => deleteEvent(ev.id)}><Trash2 className="w-4 h-4" /></Button>
                   </div>
+                </div>
+                <div className="flex gap-2 mt-3 pt-3 border-t">
+                  <Button
+                    variant="outline" size="sm" className="gap-1.5 text-xs"
+                    onClick={() => setNotifyDialog({ open: true, eventId: ev.id, mode: "all" })}
+                  >
+                    <Send className="w-3 h-3" /> Отправить всем
+                  </Button>
+                  <Button
+                    variant="outline" size="sm" className="gap-1.5 text-xs"
+                    onClick={() => { setSelectedEmployees([]); setNotifyDialog({ open: true, eventId: ev.id, mode: "selected" }); }}
+                  >
+                    <Users className="w-3 h-3" /> Выбрать
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        <div className="flex justify-center pt-2">
+          <Button onClick={openCreate} className="gap-2 px-8">
+            <Plus className="w-4 h-4" />
+            Создать событие
+          </Button>
+        </div>
       </div>
 
       {/* Create/Edit dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editEvent ? "Редактировать событие" : "Новое событие"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg">
+              {editEvent ? "Редактирование мероприятия" : "Создание мероприятия"}
+            </DialogTitle>
+            {!editEvent && (
+              <p className="text-sm text-muted-foreground text-center -mt-1">Заполните информацию ниже</p>
+            )}
+          </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Название *</Label>
-              <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Название события" />
+              <Label>Название мероприятия</Label>
+              <Input
+                value={form.title}
+                onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                placeholder="Название события"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Дата и время:</Label>
+              <div className="flex gap-2 mt-1">
+                <div className="relative flex-1">
+                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    type="date"
+                    value={form.date}
+                    onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+                    className="pl-9"
+                  />
+                </div>
+                <Input
+                  type="time"
+                  value={form.time}
+                  onChange={e => setForm(p => ({ ...p, time: e.target.value }))}
+                  className="w-32"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Описание:</Label>
+              <Textarea
+                value={form.description}
+                onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                placeholder="Добавьте описание...."
+                rows={3}
+                className="mt-1"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Тип события</Label>
-                <Select value={form.event_type} onValueChange={v => setForm(p => ({ ...p, event_type: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{EVENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
                 <Label>Важность</Label>
                 <Select value={form.importance} onValueChange={v => setForm(p => ({ ...p, importance: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Выберите важность:" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Низкая</SelectItem>
                     <SelectItem value="medium">Средняя</SelectItem>
@@ -202,25 +265,22 @@ export default function Events() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Дата *</Label>
-                <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} />
+                <Label>Тип события</Label>
+                <Select value={form.event_type} onValueChange={v => setForm(p => ({ ...p, event_type: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Выберите тип события" /></SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-              <div>
-                <Label>Время</Label>
-                <Input type="time" value={form.time} onChange={e => setForm(p => ({ ...p, time: e.target.value }))} />
-              </div>
-            </div>
-            <div>
-              <Label>Описание</Label>
-              <Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Описание события..." rows={3} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setFormOpen(false)}>Отмена</Button>
-            <Button onClick={saveEvent} disabled={saving}>{saving ? "Сохранение..." : "Сохранить"}</Button>
+            <Button onClick={saveEvent} disabled={saving} className="px-8">
+              {saving ? "Сохранение..." : editEvent ? "Сохранить" : "Создать"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -240,8 +300,10 @@ export default function Events() {
                   <input
                     type="checkbox"
                     checked={selectedEmployees.includes(emp.id)}
-                    onChange={e => setSelectedEmployees(prev => e.target.checked ? [...prev, emp.id] : prev.filter(id => id !== emp.id))}
-                    className="w-4 h-4"
+                    onChange={e => setSelectedEmployees(prev =>
+                      e.target.checked ? [...prev, emp.id] : prev.filter(id => id !== emp.id)
+                    )}
+                    className="w-4 h-4 accent-primary"
                   />
                   <span className="text-sm">{emp.full_name}</span>
                 </label>
@@ -249,11 +311,16 @@ export default function Events() {
             </div>
           )}
           {notifyDialog.mode === "all" && (
-            <p className="text-sm text-muted-foreground">Уведомление будет отправлено всем {employees.length} сотрудникам.</p>
+            <p className="text-sm text-muted-foreground">
+              Уведомление будет отправлено всем {employees.length} сотрудникам.
+            </p>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setNotifyDialog({ open: false, mode: "all" })}>Отмена</Button>
-            <Button onClick={sendNotifications} disabled={notifyDialog.mode === "selected" && selectedEmployees.length === 0}>
+            <Button
+              onClick={sendNotifications}
+              disabled={notifyDialog.mode === "selected" && selectedEmployees.length === 0}
+            >
               <Send className="w-4 h-4 mr-1" />Отправить
             </Button>
           </DialogFooter>
@@ -261,8 +328,4 @@ export default function Events() {
       </Dialog>
     </AppLayout>
   );
-}
-
-function CalendarIcon({ className }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
 }

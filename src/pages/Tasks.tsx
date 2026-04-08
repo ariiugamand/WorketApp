@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { StatusBadge } from "@/components/StatusBadge";
-import { ProgressBar } from "@/components/ProgressBar";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { ProgressBar } from "@/components/common/ProgressBar";
 import { TASK_TYPES, formatDate, daysUntil, getCurrentMonthStr } from "@/lib/utils-crm";
 import { Plus, Edit2, Trash2, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";

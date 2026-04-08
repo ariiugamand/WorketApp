@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentUser } from "@/lib/auth";
 import { Users, CalendarDays, ClipboardList, FileText, CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { StatusBadge } from "@/components/StatusBadge";
-import { ProgressBar } from "@/components/ProgressBar";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { ProgressBar } from "@/components/common/ProgressBar";
 import { formatDate } from "@/lib/utils-crm";
 import { useNavigate } from "react-router-dom";
 
@@ -133,7 +133,7 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {recentApplications.map((a: any) => (
-                    <div key={a.id} className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded" onClick={() => navigate(`/applications/${a.id}`)}>
+                    <div key={a.id} className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded" onClick={() => navigate('/applications')}>
                       <div>
                         <p className="text-sm font-medium">{a.employees?.full_name}</p>
                         <p className="text-xs text-muted-foreground">{a.app_type} · {formatDate(a.created_at)}</p>
@@ -156,7 +156,7 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {recentTasks.map((t: any) => (
-                    <div key={t.id} className="py-2 border-b last:border-0 cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded" onClick={() => navigate(`/tasks/${t.id}`)}>
+                    <div key={t.id} className="py-2 border-b last:border-0 cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded" onClick={() => navigate('/tasks')}>
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-sm font-medium truncate flex-1 mr-2">{t.title}</p>
                         <StatusBadge status={t.status} />
